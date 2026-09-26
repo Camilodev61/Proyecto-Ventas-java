@@ -21,6 +21,15 @@ public class GenerateInfoFiles {
     /** Cantidad de productos generados en la última llamada a {@link #createProductsFile(int)}. */
     private static int cantidadProductosGenerados = 0;
 
+    /**
+     * Orquesta la generación de los archivos de prueba: crea la carpeta {@code data/}
+     * si no existe, genera el archivo de productos, el archivo de vendedores y, por
+     * cada vendedor generado, un archivo de ventas asociado a su número de documento.
+     * Cualquier error durante la generación se reporta por consola sin detener la JVM
+     * abruptamente.
+     *
+     * @param args argumentos de línea de comandos (no se utilizan).
+     */
     public static void main(String[] args) {
         int cantidadVendedores = 5;
         int cantidadProductos = 10;
@@ -115,6 +124,7 @@ public class GenerateInfoFiles {
      * usados por {@link #main(String[])} para nombrar los archivos de ventas correspondientes.
      *
      * @return lista de números de documento de los vendedores generados.
+     * @throws IOException si el archivo de vendedores no puede leerse.
      */
     private static List<Long> leerDocumentosVendedores() throws IOException {
         List<Long> documentos = new ArrayList<>();
@@ -131,6 +141,10 @@ public class GenerateInfoFiles {
         return documentos;
     }
 
+    /**
+     * Crea la carpeta {@code data/} (y sus carpetas padre, si hacen falta) cuando
+     * todavía no existe.
+     */
     private static void crearCarpetaDatos() {
         File carpeta = new File(CARPETA_DATOS);
         if (!carpeta.exists()) {

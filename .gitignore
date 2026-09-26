@@ -3,3 +3,4 @@
 out/
 target/
 data/*.txt
+data/*.csv

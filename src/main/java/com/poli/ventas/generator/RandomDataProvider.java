@@ -26,6 +26,9 @@ public class RandomDataProvider {
 
     private static final Random RANDOM = new Random();
 
+    /**
+     * Constructor privado: esta clase es utilitaria y no debe instanciarse.
+     */
     private RandomDataProvider() {
     }
 

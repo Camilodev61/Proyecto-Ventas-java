@@ -7,7 +7,7 @@ para producir reportes de vendedores y productos ordenados.
 Arquitectura en capas: `model` → `io` → `process` / `generator`. Ver el detalle en
 [Spec del Proyecto Generación.md](Spec%20del%20Proyecto%20Generaci%C3%B3n.md).
 
-## Estado actual — Entrega 1
+## Estado actual — Entrega 1 y 2
 
 Implementada la etapa de **generación de datos de prueba**:
 
@@ -18,8 +18,21 @@ Implementada la etapa de **generación de datos de prueba**:
   - `productos.txt`
   - `ventas_<numeroDocumento>.txt` (uno por vendedor)
 
-Pendiente (próximas entregas): lectura de archivos (`io/`), procesamiento y reportes
-(`process/`), validaciones (`util/ValidationUtil`) y la clase `main` de la etapa 2.
+Implementada la etapa de **lectura y procesamiento de datos**:
+
+- `io/`: `VendedorFileReader`, `ProductoFileReader` y `VentaFileReader` leen los archivos
+  planos generados en la Entrega 1; `ReportWriter` escribe los reportes CSV.
+- `process/VentaProcessor`: calcula totales por vendedor (`calcularTotalPorVendedor`) y
+  cantidades por producto (`calcularCantidadPorProducto`), y los ordena de forma
+  descendente (`ordenarVendedoresPorTotal`, `ordenarProductosPorCantidad`).
+- `process/main` (segunda clase con `main`): orquesta la lectura, el cálculo y genera en
+  `data/`:
+  - `reporte_vendedores.csv`
+  - `reporte_productos.csv`
+
+Pendiente para la Entrega 3: ver [PENDIENTES.md](PENDIENTES.md) (manejo de errores de
+formato con `util/ValidationUtil`, al menos un "extra" del enunciado, `conslusion.txt`
+y revisión final de Javadoc).
 
 ## Requisitos
 
@@ -33,13 +46,14 @@ Pendiente (próximas entregas): lectura de archivos (`io/`), procesamiento y rep
 1. Abrir la carpeta del proyecto como proyecto Maven.
 2. Configurar el SDK del proyecto en Java 8 (`Project Structure → SDK`).
 3. Ejecutar primero `com.poli.ventas.generator.GenerateInfoFiles` (genera los archivos en `data/`).
-4. Más adelante, ejecutar `com.poli.ventas.process.main` (etapa 2) para leer esos archivos y generar los reportes.
+4. Luego ejecutar `com.poli.ventas.process.main` para leer esos archivos y generar los reportes.
 
 ### Desde línea de comandos (con Maven)
 
 ```bash
 mvn compile
 mvn exec:java -Dexec.mainClass="com.poli.ventas.generator.GenerateInfoFiles"
+mvn exec:java -Dexec.mainClass="com.poli.ventas.process.main"
 ```
 
 ## Estructura del proyecto
@@ -48,8 +62,10 @@ mvn exec:java -Dexec.mainClass="com.poli.ventas.generator.GenerateInfoFiles"
 src/main/java/com/poli/ventas/
 ├── model/       # Vendedor, Producto, DetalleVenta
 ├── generator/   # RandomDataProvider, GenerateInfoFiles (main, Entrega 1)
-├── io/          # lectura/escritura de archivos planos (Entrega 2)
-├── process/     # VentaProcessor, main (Entrega 2 y 3)
-└── util/        # FileUtil, ValidationUtil
+├── io/          # VendedorFileReader, ProductoFileReader, VentaFileReader, ReportWriter (Entrega 2)
+├── process/     # VentaProcessor, main (Entrega 2)
+└── util/        # FileUtil (ValidationUtil pendiente, ver PENDIENTES.md)
 data/            # archivos generados/leídos (no versionados, ver .gitignore)
 ```
+
+Ver [PENDIENTES.md](PENDIENTES.md) para el detalle de lo que falta antes de la Entrega 3.
