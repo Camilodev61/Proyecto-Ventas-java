@@ -7,18 +7,21 @@ para producir reportes de vendedores y productos ordenados.
 Arquitectura en capas: `model` → `io` → `process` / `generator`. Ver el detalle en
 [Spec del Proyecto Generación.md](Spec%20del%20Proyecto%20Generaci%C3%B3n.md).
 
-## Estado actual — Entrega 1 y 2
+## Estado actual — Entregas 1, 2 y 3
 
-Implementada la etapa de **generación de datos de prueba**:
+Las tres entregas están completas.
+
+**Entrega 1 — generación de datos de prueba**
 
 - `model/`: `Vendedor`, `Producto`, `DetalleVenta`.
 - `generator/RandomDataProvider`: nombres, apellidos, documentos y precios aleatorios.
 - `generator/GenerateInfoFiles` (clase con `main`): genera en `data/`
   - `vendedores.txt`
   - `productos.txt`
-  - `ventas_<numeroDocumento>.txt` (uno por vendedor)
+  - `ventas_<numeroDocumento>.txt` (uno por vendedor, y un archivo adicional
+    `ventas_<numeroDocumento>_2.txt` para el primer vendedor)
 
-Implementada la etapa de **lectura y procesamiento de datos**:
+**Entrega 2 — lectura y procesamiento de datos**
 
 - `io/`: `VendedorFileReader`, `ProductoFileReader` y `VentaFileReader` leen los archivos
   planos generados en la Entrega 1; `ReportWriter` escribe los reportes CSV.
@@ -30,9 +33,18 @@ Implementada la etapa de **lectura y procesamiento de datos**:
   - `reporte_vendedores.csv`
   - `reporte_productos.csv`
 
-Pendiente para la Entrega 3: ver [PENDIENTES.md](PENDIENTES.md) (manejo de errores de
-formato con `util/ValidationUtil`, al menos un "extra" del enunciado, `conslusion.txt`
-y revisión final de Javadoc).
+**Entrega 3 — validación, manejo de errores y extra**
+
+- `util/ValidationUtil`: `idProductoExiste`, `cantidadValida`, `precioValido` y
+  `logFormatoErroneo`. Los lectores de `io/` descartan y registran las líneas inválidas
+  sin detener el programa.
+- Extra (a): múltiples archivos de ventas por vendedor; los totales se combinan por
+  documento del vendedor.
+- Ambas clases `main` muestran mensajes de error específicos.
+- Conclusiones del proyecto en [conslusion.txt](conslusion.txt).
+
+Nota: los archivos inválidos y las líneas inválidas se reportan por consola con el
+prefijo `[AVISO]`.
 
 ## Requisitos
 
@@ -64,8 +76,6 @@ src/main/java/com/poli/ventas/
 ├── generator/   # RandomDataProvider, GenerateInfoFiles (main, Entrega 1)
 ├── io/          # VendedorFileReader, ProductoFileReader, VentaFileReader, ReportWriter (Entrega 2)
 ├── process/     # VentaProcessor, main (Entrega 2)
-└── util/        # FileUtil (ValidationUtil pendiente, ver PENDIENTES.md)
+└── util/        # FileUtil, ValidationUtil (Entrega 3)
 data/            # archivos generados/leídos (no versionados, ver .gitignore)
 ```
-
-Ver [PENDIENTES.md](PENDIENTES.md) para el detalle de lo que falta antes de la Entrega 3.

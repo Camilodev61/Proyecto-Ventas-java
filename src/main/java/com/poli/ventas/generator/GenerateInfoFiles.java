@@ -21,12 +21,17 @@ public class GenerateInfoFiles {
     /** Cantidad de productos generados en la última llamada a {@link #createProductsFile(int)}. */
     private static int cantidadProductosGenerados = 0;
 
+    /** Indica si ocurrió algún error durante la generación, para no anunciar un éxito falso. */
+    private static boolean huboErrores = false;
+
     /**
      * Orquesta la generación de los archivos de prueba: crea la carpeta {@code data/}
      * si no existe, genera el archivo de productos, el archivo de vendedores y, por
      * cada vendedor generado, un archivo de ventas asociado a su número de documento.
-     * Cualquier error durante la generación se reporta por consola sin detener la JVM
-     * abruptamente.
+     * Además genera un segundo archivo de ventas ({@code ventas_<id>_2.txt}) para el
+     * primer vendedor, para ejercitar el soporte de varios archivos por vendedor.
+     * Los errores se reportan por consola sin detener la JVM abruptamente; al final
+     * se informa éxito solo si no hubo ningún error.
      *
      * @param args argumentos de línea de comandos (no se utilizan).
      */
@@ -41,25 +46,53 @@ public class GenerateInfoFiles {
             createProductsFile(cantidadProductos);
             createSalesManInfoFile(cantidadVendedores);
 
-            for (long idVendedor : leerDocumentosVendedores()) {
+            List<Long> documentos = leerDocumentosVendedores();
+            for (long idVendedor : documentos) {
                 createSalesMenFile(ventasPorVendedor, RandomDataProvider.randomNombre(), idVendedor);
             }
 
-            System.out.println("Generación de archivos completada exitosamente en la carpeta '" + CARPETA_DATOS + "'.");
+            if (!documentos.isEmpty()) {
+                long idConVariosArchivos = documentos.get(0);
+                escribirArchivoVentas(ventasPorVendedor, idConVariosArchivos, "ventas_" + idConVariosArchivos + "_2.txt");
+            }
+
+            if (huboErrores) {
+                System.err.println("La generación terminó con errores; revise los mensajes anteriores.");
+            } else {
+                System.out.println("Generación de archivos completada exitosamente en la carpeta '" + CARPETA_DATOS + "'.");
+            }
         } catch (Exception e) {
             handleGenerationError(e);
         }
     }
 
     /**
-     * Genera el archivo de ventas de un vendedor con un número aleatorio de líneas de venta.
+     * Genera el archivo {@code data/ventas_<id>.txt} de un vendedor, con un encabezado
+     * {@code tipoDocumento;id} y {@code randomSalesCount} líneas {@code idProducto;cantidad}
+     * con producto y cantidad aleatorios.
      *
      * @param randomSalesCount cantidad de líneas de venta a generar en el archivo.
-     * @param name             nombre usado únicamente para dejar traza en el nombre del archivo (no se persiste en el contenido).
-     * @param id               número de documento del vendedor, usado para nombrar el archivo {@code ventas_<id>.txt}.
+     * @param name             nombre del vendedor; se conserva por la firma exigida por el enunciado
+     *                         pero no se usa ni se escribe en el archivo.
+     * @param id               número de documento del vendedor, escrito en el encabezado y usado en el nombre del archivo.
      */
     public static void createSalesMenFile(int randomSalesCount, String name, long id) {
-        File archivo = new File(CARPETA_DATOS, "ventas_" + id + ".txt");
+        escribirArchivoVentas(randomSalesCount, id, "ventas_" + id + ".txt");
+    }
+
+    /**
+     * Escribe un archivo de ventas en {@code data/} con el nombre indicado. Permite generar
+     * varios archivos de ventas para un mismo vendedor (ej. {@code ventas_<id>_2.txt}).
+     * Los ids de producto se generan en el rango {@code P1..P<cantidadProductosGenerados>}
+     * para que siempre existan en {@code productos.txt}; si aún no se generaron productos,
+     * se usa solo {@code P1}.
+     *
+     * @param randomSalesCount cantidad de líneas de venta a generar en el archivo.
+     * @param id               número de documento del vendedor, escrito en el encabezado.
+     * @param nombreArchivo    nombre del archivo a crear dentro de {@code data/}.
+     */
+    private static void escribirArchivoVentas(int randomSalesCount, long id, String nombreArchivo) {
+        File archivo = new File(CARPETA_DATOS, nombreArchivo);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivo))) {
             writer.write(RandomDataProvider.randomTipoDocumento() + ";" + id);
             writer.newLine();
@@ -77,7 +110,9 @@ public class GenerateInfoFiles {
     }
 
     /**
-     * Genera el archivo {@code data/productos.txt} con la cantidad de productos indicada.
+     * Genera el archivo {@code data/productos.txt} con la cantidad de productos indicada,
+     * en formato {@code id;nombre;precio}. Si la escritura termina bien, recuerda la cantidad
+     * para que las ventas generadas después solo referencien productos existentes.
      *
      * @param productsCount cantidad de productos a generar, con ids consecutivos {@code P1..Pn}.
      */
@@ -98,7 +133,8 @@ public class GenerateInfoFiles {
     }
 
     /**
-     * Genera el archivo {@code data/vendedores.txt} con la cantidad de vendedores indicada.
+     * Genera el archivo {@code data/vendedores.txt} con la cantidad de vendedores indicada,
+     * en formato {@code TipoDoc;NumDoc;Nombres;Apellidos}.
      *
      * @param salesmanCount cantidad de vendedores a generar.
      */
@@ -153,11 +189,20 @@ public class GenerateInfoFiles {
     }
 
     /**
-     * Maneja de forma controlada cualquier error ocurrido durante la generación de archivos.
+     * Maneja de forma controlada cualquier error ocurrido durante la generación de archivos:
+     * marca {@code huboErrores} y muestra por la salida de error un mensaje según el tipo
+     * de excepción (E/S o inesperada).
      *
      * @param e la excepción capturada.
      */
     private static void handleGenerationError(Exception e) {
-        System.err.println("Error generando los archivos de prueba: " + e.getMessage());
+        huboErrores = true;
+        if (e instanceof IOException) {
+            System.err.println("Error de escritura/lectura generando los archivos en '" + CARPETA_DATOS
+                    + "' (¿faltan permisos o espacio?): " + e.getMessage());
+        } else {
+            System.err.println("Error inesperado generando los archivos de prueba ("
+                    + e.getClass().getSimpleName() + "): " + e.getMessage());
+        }
     }
 }

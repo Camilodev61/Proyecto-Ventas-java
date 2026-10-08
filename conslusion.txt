@@ -1,0 +1,41 @@
+CONCLUSIONES DEL PROYECTO — Generación y Clasificación de Datos (Java)
+
+1. Lo aprendido durante el desarrollo
+
+- Organizar un programa en capas (model, generator, io, process, util) con una regla de
+  dependencia clara (las capas superiores usan a las inferiores, nunca al revés). Esto
+  permitió tener dos clases con main (GenerateInfoFiles y main) totalmente independientes
+  que reutilizan el mismo modelo.
+- Leer y escribir archivos planos con BufferedReader/BufferedWriter y try-with-resources,
+  que garantiza el cierre de los archivos incluso cuando ocurre un error.
+- Usar colecciones (List, Map, LinkedHashMap) y ordenar con comparadores para producir los
+  reportes de vendedores y productos de mayor a menor.
+- Validar datos de entrada: descartar y registrar líneas con formato incorrecto, cantidades
+  o precios no positivos y productos inexistentes, sin detener el programa.
+- Documentar con Javadoc (@param, @return, @throws) y usar nombres descriptivos, lo que hace
+  el código entendible sin explicaciones adicionales.
+- Trabajar con control de versiones (Git y GitHub), con un commit por entrega.
+
+2. Aplicaciones profesionales de lo aprendido
+
+- Procesos por lotes (batch) de ETL: leer archivos de origen, validarlos, transformarlos y
+  generar reportes, algo habitual en conciliaciones contables, nóminas y reportes de ventas.
+- Diseño en capas: es la base de aplicaciones empresariales (por ejemplo servicios con
+  controlador, servicio y repositorio), donde separar responsabilidades facilita las pruebas
+  y el mantenimiento.
+- Validación y manejo controlado de errores en cualquier sistema que reciba datos externos,
+  para que un dato malo no tumbe todo el proceso.
+- Documentación y versionamiento como práctica de trabajo en equipo.
+
+3. Dificultades presentadas
+
+- El enunciado exige una clase llamada "main" en minúscula, lo cual rompe la convención de
+  nombres de Java; hubo que tenerlo presente para no confundirla con el método main.
+- Las firmas de los métodos del enunciado son fijas (por ejemplo createSalesManInfoFile
+  devuelve void), por lo que fue necesario leer de nuevo vendedores.txt para saber a quién
+  generarle archivo de ventas.
+- Los totales salían en notación científica en el reporte; se resolvió formateándolos con
+  dos decimales y Locale.US para que no dependan del idioma del sistema.
+- Cada archivo de ventas se lee en dos reportes, por lo que los avisos de datos inválidos
+  salían repetidos; se resolvió evitando registrar dos veces el mismo aviso.
+- Configurar el entorno (JDK, Maven) y autenticarse con GitHub mediante token personal.

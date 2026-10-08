@@ -8,6 +8,8 @@ import com.poli.ventas.model.Vendedor;
 import com.poli.ventas.util.FileUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,8 +98,9 @@ public class main {
     /**
      * Calcula la cantidad total vendida de cada producto a partir de los archivos
      * de ventas y escribe el reporte {@code reporte_productos.csv} ordenado de
-     * mayor a menor cantidad vendida. Si un id de producto vendido no existe en
-     * {@code productos.txt}, se usa el propio id como nombre en el reporte.
+     * mayor a menor cantidad vendida. Las líneas con productos inexistentes en
+     * {@code productos.txt} ya se descartan al leer; el uso del id como nombre es solo
+     * una salvaguarda.
      *
      * @param productos      mapa de productos disponibles, con el id de producto como llave.
      * @param archivosVentas archivos de ventas a procesar (uno o varios por vendedor).
@@ -105,7 +108,7 @@ public class main {
      */
     private static void generarReporteProductos(Map<String, Producto> productos,
                                                  List<File> archivosVentas) throws Exception {
-        Map<String, Integer> cantidades = VentaProcessor.calcularCantidadPorProducto(archivosVentas);
+        Map<String, Integer> cantidades = VentaProcessor.calcularCantidadPorProducto(archivosVentas, productos);
         List<Map.Entry<String, Integer>> cantidadesOrdenadas = VentaProcessor.ordenarProductosPorCantidad(cantidades);
 
         List<String[]> filas = new ArrayList<>();
@@ -120,11 +123,21 @@ public class main {
     }
 
     /**
-     * Maneja de forma controlada cualquier error ocurrido durante el procesamiento de archivos.
+     * Maneja de forma controlada cualquier error ocurrido durante el procesamiento de archivos,
+     * con un mensaje específico: archivo de entrada faltante (sugiere ejecutar
+     * {@code GenerateInfoFiles}), error de lectura/escritura, o error inesperado.
      *
      * @param e la excepción capturada.
      */
     private static void handleProcessError(Exception e) {
-        System.err.println("Error procesando las ventas: " + e.getMessage());
+        if (e instanceof FileNotFoundException) {
+            System.err.println("Error: no se encontró un archivo de entrada (" + e.getMessage()
+                    + "). Ejecute primero GenerateInfoFiles para crear los datos en '" + CARPETA_DATOS + "'.");
+        } else if (e instanceof IOException) {
+            System.err.println("Error de lectura/escritura procesando las ventas: " + e.getMessage());
+        } else {
+            System.err.println("Error inesperado procesando las ventas (" + e.getClass().getSimpleName()
+                    + "): " + e.getMessage());
+        }
     }
 }
